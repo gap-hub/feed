@@ -1,0 +1,13 @@
+.github
+.vscode
+node_modules
+src/
+.prettierrc
+.travis.yml
+eslint.config.mjs
+jest.config.mjs
+pnpm-lock.yaml
+rollup.config.ts
+tsconfig.json
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
