@@ -1,15 +1,28 @@
 {
-  "name": "feed",
-  "version": "4.2.2",
-  "description": "Feed is a RSS, Atom and JSON feed generator for Node.js, making content syndication simple and intuitive!",
-  "homepage": "https://github.com/jpmonette/feed",
-  "author": "Jean-Philippe Monette <contact@jpmonette.net>",
+  "name": "@gaphub/feed",
+  "version": "5.0.0",
+  "description": "Feed is a RSS, Atom and JSON feed generator/parser for Node.js, making content syndication simple and intuitive!",
+  "homepage": "https://github.com/gap-hub/feed",
+  "author": "Jon Zhang <jonzhang520s@gmail.com>",
   "license": "MIT",
-  "main": "lib/feed.js",
-  "types": "lib/feed.d.ts",
+  "type": "module",
+  "files": [
+    "lib"
+  ],
+  "main": "./lib/index.cjs",
+  "module": "./lib/index.mjs",
+  "unpkg": "./lib/index.iife.min.js",
+  "jsdelivr": "./lib/index.iife.min.js",
+  "types": "./lib/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.cjs"
+    }
+  },
   "scripts": {
-    "build": "rm -rf lib/ && mkdir lib && tsc",
-    "prepublish": "yarn build",
+    "build": "NODE_OPTIONS=\"--max-old-space-size=6144\" rollup --config=rollup.config.ts --configPlugin=rollup-plugin-esbuild",
+    "prepublish": "pnpm run build",
     "test": "jest --silent",
     "test-travis": "jest --coverage"
   },
@@ -19,38 +32,47 @@
     "feed",
     "syndication",
     "xml",
+    "json",
     "wrapper",
-    "blog"
+    "blog",
+    "parser",
+    "generator"
   ],
   "dependencies": {
+    "axios": "^1.7.7",
+    "ky": "^1.7.2",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
-    "@types/jest": "^27.5.1",
-    "@typescript-eslint/eslint-plugin": "^5.26.0",
-    "@typescript-eslint/parser": "^5.26.0",
+    "@eslint/js": "^9.10.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/jest": "^29.5.13",
+    "@typescript-eslint/eslint-plugin": "^8.5.0",
+    "@typescript-eslint/parser": "^8.5.0",
     "codeclimate-test-reporter": "^0.5.1",
     "coveralls": "^3.1.1",
-    "eslint": "^8.0.1",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "jest": "^28.1.0",
-    "prettier": "^2.6.2",
-    "source-map-loader": "^3.0.1",
-    "ts-jest": "^28.0.3",
-    "typescript": "^4.7.2"
+    "eslint": "^9.10.0",
+    "globals": "^15.9.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.3",
+    "rollup": "^4.22.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "rss-parser": "^3.13.0",
+    "source-map-loader": "^5.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.5.0"
   },
   "engines": {
     "node": ">=0.4.0"
   },
   "bugs": {
-    "url": "https://github.com/jpmonette/feed/issues"
+    "url": "https://github.com/gap-hub/feed/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jpmonette/feed.git"
+    "url": "https://github.com/gap-hub/feed"
   },
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "pnpm@9.6.0"
 }

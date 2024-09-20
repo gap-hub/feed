@@ -1,19 +1,18 @@
-import renderAtom from "./atom1";
-import renderJSON from "./json";
-import renderRSS from "./rss2";
-import { Author, Extension, FeedOptions, Item } from "./typings";
-
-export { Author, Extension, FeedOptions, Item };
+import { FeedItem } from "./feed-item";
+import { renderAtom, renderJSON, renderRSS } from "./render";
+import { Author, Extension, FeedOptions, ItemOptions } from "./typings";
+import { isString } from "./utils";
 
 /**
  * Class used to generate Feeds
  */
 export class Feed {
   options: FeedOptions;
-  items: Item[] = [];
+  items: FeedItem[] = [];
   categories: string[] = [];
   contributors: Author[] = [];
   extensions: Extension[] = [];
+  private _stylesheetHref?: string;
 
   constructor(options: FeedOptions) {
     this.options = options;
@@ -23,38 +22,58 @@ export class Feed {
    * Add a feed item
    * @param item
    */
-  public addItem = (item: Item) => this.items.push(item);
+  addItem(item: FeedItem | ItemOptions) {
+    if (item instanceof FeedItem) {
+      this.items.push(item);
+    } else {
+      this.items.push(new FeedItem(item));
+    }
+  }
 
   /**
    * Add a category
    * @param category
    */
-  public addCategory = (category: string) => this.categories.push(category);
+  addCategory = (category: string) => this.categories.push(category);
 
   /**
    * Add a contributor
    * @param contributor
    */
-  public addContributor = (contributor: Author) => this.contributors.push(contributor);
+  addContributor(contributor: Author | string) {
+    if (isString(contributor)) {
+      this.contributors.push({ name: contributor });
+    } else {
+      this.contributors.push(contributor);
+    }
+  }
 
   /**
    * Adds an extension
    * @param extension
    */
-  public addExtension = (extension: Extension) => this.extensions.push(extension);
+  addExtension = (extension: Extension) => this.extensions.push(extension);
+
+  set stylesheet(href: string) {
+    this._stylesheetHref = href;
+  }
+
+  get stylesheet(): string | undefined {
+    return this._stylesheetHref;
+  }
 
   /**
    * Returns a Atom 1.0 feed
    */
-  public atom1 = (): string => renderAtom(this);
+  atom1 = (): string => renderAtom(this);
 
   /**
    * Returns a RSS 2.0 feed
    */
-  public rss2 = (): string => renderRSS(this);
+  rss2 = (): string => renderRSS(this);
 
   /**
    * Returns a JSON1 feed
    */
-  public json1 = (): string => renderJSON(this);
+  json1 = (): string => renderJSON(this);
 }

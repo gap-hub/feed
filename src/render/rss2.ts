@@ -1,29 +1,49 @@
 import * as convert from "xml-js";
-import { generator } from "./config";
-import { Feed } from "./feed";
-import { Author, Category, Enclosure, Item } from "./typings";
-import { sanitize } from "./utils";
+
+import { generator } from "../config";
+import { Feed } from "../feed";
+import { FeedItem } from "../feed-item";
+import { Category, Enclosure } from "../typings";
+import { isURL, sanitize } from "../utils";
 
 /**
  * Returns a RSS 2.0 feed
  */
-export default (ins: Feed) => {
+export function renderRSS(ins: Feed) {
   const { options } = ins;
   let isAtom = false;
   let isContent = false;
 
   const base: any = {
     _declaration: { _attributes: { version: "1.0", encoding: "utf-8" } },
-    rss: {
-      _attributes: { version: "2.0" },
-      channel: {
-        title: { _text: options.title },
-        link: { _text: sanitize(options.link) },
-        description: { _text: options.description },
-        lastBuildDate: { _text: options.updated ? options.updated.toUTCString() : new Date().toUTCString() },
-        docs: { _text: options.docs ? options.docs : "https://validator.w3.org/feed/docs/rss2.html" },
-        generator: { _text: options.generator || generator },
+  };
+  if (ins.stylesheet) {
+    base._instruction = {
+      "xml-stylesheet": {
+        _attributes: {
+          href: sanitize(ins.stylesheet),
+          type: "text/xsl",
+        },
       },
+    };
+  }
+  base.rss = {
+    _attributes: { version: "2.0" },
+    channel: {
+      title: { _text: options.title },
+      link: { _text: sanitize(options.link) },
+      description: { _text: options.description },
+      lastBuildDate: {
+        _text: options.updated
+          ? options.updated.toUTCString()
+          : new Date().toUTCString(),
+      },
+      docs: {
+        _text: options.docs
+          ? sanitize(options.docs)
+          : "https://validator.w3.org/feed/docs/rss2.html",
+      },
+      generator: { _text: options.generator || generator },
     },
   };
 
@@ -51,7 +71,7 @@ export default (ins: Feed) => {
     base.rss.channel.image = {
       title: { _text: options.title },
       url: { _text: options.image },
-      link: { _text: sanitize(options.link) }
+      link: { _text: sanitize(options.link) },
     };
   }
 
@@ -104,8 +124,8 @@ export default (ins: Feed) => {
     base.rss.channel["atom:link"] = {
       _attributes: {
         href: sanitize(options.hub),
-        rel: "hub"
-      }
+        rel: "hub",
+      },
     };
   }
 
@@ -115,21 +135,24 @@ export default (ins: Feed) => {
    */
   base.rss.channel.item = [];
 
-  ins.items.map((entry: Item) => {
-    let item: any = {};
+  ins.items.forEach((feedItem: FeedItem) => {
+    const item: any = {};
+    const entry = feedItem.options;
 
     if (entry.title) {
-      item.title = { _cdata: entry.title };
+      item.title = { _cdata: entry.title?.text };
     }
 
     if (entry.link) {
       item.link = { _text: sanitize(entry.link) };
     }
 
-    if (entry.guid) {
-      item.guid = { _text: entry.guid };
-    } else if (entry.id) {
+    if (entry.id) {
+      const isNotUrl = !isURL(entry.id);
       item.guid = { _text: entry.id };
+      if (isNotUrl) {
+        item.guid._attributes = { isPermaLink: "false" };
+      }
     } else if (entry.link) {
       item.guid = { _text: sanitize(entry.link) };
     }
@@ -143,20 +166,20 @@ export default (ins: Feed) => {
     }
 
     if (entry.description) {
-      item.description = { _cdata: entry.description };
+      item.description = { _cdata: entry.description.text };
     }
 
     if (entry.content) {
       isContent = true;
-      item["content:encoded"] = { _cdata: entry.content };
+      item["content:encoded"] = { _cdata: entry.content.text };
     }
     /**
      * Item Author
      * https://validator.w3.org/feed/docs/rss2.html#ltauthorgtSubelementOfLtitemgt
      */
-    if (Array.isArray(entry.author)) {
+    if (Array.isArray(entry.authors)) {
       item.author = [];
-      entry.author.map((author: Author) => {
+      entry.authors.forEach((author) => {
         if (author.email && author.name) {
           item.author.push({ _text: author.email + " (" + author.name + ")" });
         }
@@ -168,7 +191,7 @@ export default (ins: Feed) => {
      */
     if (Array.isArray(entry.category)) {
       item.category = [];
-      entry.category.map((category: Category) => {
+      entry.category.forEach((category) => {
         item.category.push(formatCategory(category));
       });
     }
@@ -180,15 +203,12 @@ export default (ins: Feed) => {
     if (entry.enclosure) {
       item.enclosure = formatEnclosure(entry.enclosure);
     }
-
     if (entry.image) {
       item.enclosure = formatEnclosure(entry.image, "image");
     }
-
     if (entry.audio) {
       item.enclosure = formatEnclosure(entry.audio, "audio");
     }
-
     if (entry.video) {
       item.enclosure = formatEnclosure(entry.video, "video");
     }
@@ -198,28 +218,46 @@ export default (ins: Feed) => {
 
   if (isContent) {
     base.rss._attributes["xmlns:dc"] = "http://purl.org/dc/elements/1.1/";
-    base.rss._attributes["xmlns:content"] = "http://purl.org/rss/1.0/modules/content/";
+    base.rss._attributes["xmlns:content"] =
+      "http://purl.org/rss/1.0/modules/content/";
   }
 
   if (isAtom) {
     base.rss._attributes["xmlns:atom"] = "http://www.w3.org/2005/Atom";
   }
-  return convert.js2xml(base, { compact: true, ignoreComment: true, spaces: 4 });
-};
+  return convert.js2xml(base, {
+    compact: true,
+    ignoreComment: true,
+    spaces: 4,
+  });
+}
 
 /**
  * Returns a formated enclosure
  * @param enclosure
  * @param mimeCategory
  */
-const formatEnclosure = (enclosure: string | Enclosure, mimeCategory = "image") => {
+const formatEnclosure = (
+  enclosure: string | Enclosure,
+  mimeCategory = "image",
+) => {
   if (typeof enclosure === "string") {
-    const type = new URL(enclosure).pathname.split(".").slice(-1)[0];
-    return { _attributes: { url: enclosure, length: 0, type: `${mimeCategory}/${type}` } };
+    const type = new URL(sanitize(enclosure)!).pathname.split(".").slice(-1)[0];
+    return {
+      _attributes: {
+        url: enclosure,
+        length: 0,
+        type: `${mimeCategory}/${type}`,
+      },
+    };
   }
 
-  const type = new URL(enclosure.url).pathname.split(".").slice(-1)[0];
-  return { _attributes: { length: 0, type: `${mimeCategory}/${type}`, ...enclosure } };
+  const type = new URL(sanitize(enclosure.url)!).pathname
+    .split(".")
+    .slice(-1)[0];
+  return {
+    _attributes: { length: 0, type: `${mimeCategory}/${type}`, ...enclosure },
+  };
 };
 
 /**

@@ -1,9 +1,10 @@
-module.exports = {
+export default {
   verbose: true,
   collectCoverage: true,
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
+  transformIgnorePatterns: ["/node_modules/(?!(ky)/)"],
   testEnvironment: "node",
   testPathIgnorePatterns: ["/node_modules/", "__tests__/util/"],
   testRegex: "(/__tests__/.*\\.spec)\\.(jsx?|tsx?)$",

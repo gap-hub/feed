@@ -73,7 +73,7 @@ This code of conduct and its related procedures also applies to unacceptable beh
 
 ## 9. Contact info
 
-contact@jpmonette.net
+jonzhang520s@gmail.com
 
 ## 10. License and attribution
 
