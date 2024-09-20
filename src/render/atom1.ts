@@ -1,48 +1,70 @@
 import * as convert from "xml-js";
-import { generator } from "./config";
-import { Feed } from "./feed";
-import { Author, Category, Item } from "./typings";
-import { sanitize } from "./utils";
+
+import { defaultTextType, generator } from "../config";
+import { Feed } from "../feed";
+import { FeedItem } from "../feed-item";
+import { Author, Category } from "../typings";
+import { sanitize } from "../utils";
 
 /**
  * Returns an Atom feed
  * @param ins
  */
-export default (ins: Feed) => {
+export function renderAtom(ins: Feed) {
   const { options } = ins;
 
   const base: any = {
     _declaration: { _attributes: { version: "1.0", encoding: "utf-8" } },
-    feed: {
-      _attributes: { xmlns: "http://www.w3.org/2005/Atom" },
-      id: options.id,
-      title: options.title,
-      updated: options.updated ? options.updated.toISOString() : new Date().toISOString(),
-      generator: sanitize(options.generator || generator)
-    }
+  };
+  if (ins.stylesheet) {
+    base._instruction = {
+      "xml-stylesheet": {
+        _attributes: {
+          href: sanitize(ins.stylesheet),
+          type: "text/xsl",
+        },
+      },
+    };
+  }
+  base.feed = {
+    _attributes: { xmlns: "http://www.w3.org/2005/Atom" },
+    id: options.id,
+    title: options.title,
+    updated: options.updated
+      ? options.updated.toISOString()
+      : new Date().toISOString(),
+    generator: sanitize(options.generator || generator),
   };
 
-  if (options.author) {
-    base.feed.author = formatAuthor(options.author);
+  if (options.authors) {
+    base.feed.author = formatAuthor(options.authors[0]);
   }
 
   base.feed.link = [];
 
   // link (rel="alternate")
   if (options.link) {
-    base.feed.link.push({ _attributes: { rel: "alternate", href: sanitize(options.link) } });
+    base.feed.link.push({
+      _attributes: { rel: "alternate", href: sanitize(options.link) },
+    });
   }
 
   // link (rel="self")
-  const atomLink = sanitize(options.feed || (options.feedLinks && options.feedLinks.atom));
+  const atomLink = sanitize(
+    options.feed || (options.feedLinks && options.feedLinks.atom),
+  );
 
   if (atomLink) {
-    base.feed.link.push({ _attributes: { rel: "self", href: sanitize(atomLink) } });
+    base.feed.link.push({
+      _attributes: { rel: "self", href: sanitize(atomLink) },
+    });
   }
 
   // link (rel="hub")
   if (options.hub) {
-    base.feed.link.push({ _attributes: { rel: "hub", href: sanitize(options.hub) } });
+    base.feed.link.push({
+      _attributes: { rel: "hub", href: sanitize(options.hub) },
+    });
   }
 
   /**************************************************************************
@@ -84,16 +106,20 @@ export default (ins: Feed) => {
   /**************************************************************************
    * "entry" nodes
    *************************************************************************/
-  ins.items.map((item: Item) => {
+  ins.items.map((feedItem: FeedItem) => {
+    const item = feedItem.options;
     //
     // entry: required elements
     //
 
-    let entry: convert.ElementCompact = {
-      title: { _attributes: { type: "html" }, _cdata: item.title },
+    const entry: convert.ElementCompact = {
+      title: {
+        _attributes: { type: item.title.type ?? defaultTextType },
+        _cdata: item.title.text,
+      },
       id: sanitize(item.id || item.link),
       link: [{ _attributes: { href: sanitize(item.link) } }],
-      updated: item.date.toISOString()
+      updated: item.date.toISOString(),
     };
 
     //
@@ -101,23 +127,23 @@ export default (ins: Feed) => {
     //
     if (item.description) {
       entry.summary = {
-        _attributes: { type: "html" },
-        _cdata: item.description,
+        _attributes: { type: item.description.type ?? defaultTextType },
+        _cdata: item.description.text,
       };
     }
 
     if (item.content) {
       entry.content = {
-        _attributes: { type: "html" },
-        _cdata: item.content,
+        _attributes: { type: item.content.type ?? defaultTextType },
+        _cdata: item.content.text,
       };
     }
 
     // entry author(s)
-    if (Array.isArray(item.author)) {
+    if (Array.isArray(item.authors)) {
       entry.author = [];
 
-      item.author.map((author: Author) => {
+      item.authors.map((author: Author) => {
         entry.author.push(formatAuthor(author));
       });
     }
@@ -140,10 +166,10 @@ export default (ins: Feed) => {
     }
 
     // contributor
-    if (item.contributor && Array.isArray(item.contributor)) {
+    if (item.contributors && Array.isArray(item.contributors)) {
       entry.contributor = [];
 
-      item.contributor.map((contributor: Author) => {
+      item.contributors.map((contributor: Author) => {
         entry.contributor.push(formatAuthor(contributor));
       });
     }
@@ -163,8 +189,12 @@ export default (ins: Feed) => {
     base.feed.entry.push(entry);
   });
 
-  return convert.js2xml(base, { compact: true, ignoreComment: true, spaces: 4 });
-};
+  return convert.js2xml(base, {
+    compact: true,
+    ignoreComment: true,
+    spaces: 4,
+  });
+}
 
 /**
  * Returns a formatted author
@@ -173,7 +203,7 @@ export default (ins: Feed) => {
 const formatAuthor = (author: Author) => {
   const { name, email, link } = author;
 
-  const out: { name?: string, email?: string, uri?: string } = { name };
+  const out: { name?: string; email?: string; uri?: string } = { name };
   if (email) {
     out.email = email;
   }

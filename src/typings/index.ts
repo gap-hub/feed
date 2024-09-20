@@ -1,22 +1,37 @@
-export interface Item {
-  title: string;
+export interface CustomField {
+  [key: string]: CustomFieldValue;
+}
+
+export type CustomFieldValue = string | number | boolean | undefined;
+
+export interface Text {
+  type?: "text" | "html";
+  text: string;
+}
+
+export interface ItemOptions {
+  title: Text;
+  /**
+   * The id of the feed item.
+   *
+   */
   id?: string;
   link: string;
   date: Date;
 
-  description?: string;
-  content?: string;
+  description?: Text;
+  content?: Text;
   category?: Category[];
 
-  guid?: string;
+  // guid?: string | Guid;
 
   image?: string | Enclosure;
   audio?: string | Enclosure;
   video?: string | Enclosure;
   enclosure?: Enclosure;
 
-  author?: Author[];
-  contributor?: Author[];
+  authors?: Author[];
+  contributors?: Author[];
 
   published?: Date;
   copyright?: string;
@@ -33,13 +48,14 @@ export interface Enclosure {
 }
 
 export interface Author {
-  name?: string;
+  name: string;
   email?: string;
   link?: string;
+  avatar?: string;
 }
 
 export interface Category {
-  name?: string;
+  name: string;
   domain?: string;
   scheme?: string;
   term?: string;
@@ -51,6 +67,9 @@ export interface FeedOptions {
   updated?: Date;
   generator?: string;
   language?: string;
+  /**
+   * Time to live. It's a number of minutes that indicates how long a channel can be cached before refreshing from the source.
+   */
   ttl?: number;
 
   feed?: string;
@@ -58,7 +77,7 @@ export interface FeedOptions {
   hub?: string;
   docs?: string;
 
-  author?: Author;
+  authors?: Author[];
   link?: string;
   description?: string;
   image?: string;
@@ -69,4 +88,10 @@ export interface FeedOptions {
 export interface Extension {
   name: string;
   objects: any;
+}
+
+export interface FeedParseOptions {
+  timeout?: number; // timeout in milliseconds
+  headers?: Record<string, string>;
+  maxRedirects?: number;
 }

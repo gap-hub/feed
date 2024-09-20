@@ -1,1 +1,2 @@
-export const generator = "https://github.com/jpmonette/feed";
+export const generator = "https://github.com/gap-hub/feed";
+export const defaultTextType = "html";

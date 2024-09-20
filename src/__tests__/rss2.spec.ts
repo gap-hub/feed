@@ -1,19 +1,25 @@
 import { Feed } from "../feed";
+import { FeedItem } from "../feed-item";
+import { FeedParser } from "../parser";
 import { published, sampleFeed, updated } from "./setup";
 
 describe("rss 2.0", () => {
-  it("should generate a valid feed", () => {
+  it("should generate a valid feed", async () => {
     const actual = sampleFeed.rss2();
     expect(actual).toMatchSnapshot();
+
+    const parser = new FeedParser();
+    const parsedFeed = await parser.parseString(actual);
+    expect(parsedFeed).not.toBeNull();
+    expect(parsedFeed!.rss2()).toMatchSnapshot();
   });
   it("should generate a valid feed with image properties", () => {
-    sampleFeed.addItem({
-      title: "Hello World",
-      guid: "419c523a-28f4-489c-877e-9604be64c001",
-      link: "https://example.com/hello-world2",
-      description: "This is an article about Hello World.",
-      content: "Content of my item",
-      author: [
+    const item = new FeedItem({
+      title: { text: "Hello World1", type: "text" },
+      id: "419c523a-28f4-489c-877e-9604be64c001",
+      link: "https://example.com/hello-world3",
+      date: new Date(),
+      authors: [
         {
           name: "Jane Doe",
           email: "janedoe@example.com",
@@ -50,21 +56,33 @@ describe("rss 2.0", () => {
           domain: "http://www.fool.com/cusips",
         },
       ],
-      date: updated,
       image: { url: "https://example.com/hello-world.jpg", length: 12665 },
       published,
     });
+    item.setTitle("Hello World");
+    item.setTitle({ text: "Hello World1", type: "text" });
+    item.setDescription("This is an article about Hello World.");
+    item.setContent("Content of my item");
+    item.setLink("https://example.com/hello-world2");
+    item.setDate(updated);
+    item.addContributor("Jon Zhang");
+    item.setCopyright("All rights reserved 2024, Jon Zhang");
+    sampleFeed.addItem(item);
+
     const actual = sampleFeed.rss2();
     expect(actual).toMatchSnapshot();
   });
   it("should generate a valid feed with enclosure", () => {
     sampleFeed.addItem({
-      title: "Hello World",
-      guid: "419c523a-28f4-489c-877e-9604be64c001",
+      title: { text: "Hello World", type: "text" },
+      id: "419c523a-28f4-489c-877e-9604be64c001",
       link: "https://example.com/hello-world2",
-      description: "This is an article about Hello World.",
-      content: "Content of my item",
-      author: [
+      description: {
+        text: "This is an article about Hello World.",
+        type: "text",
+      },
+      content: { text: "Content of my item", type: "text" },
+      authors: [
         {
           name: "Jane Doe",
           email: "janedoe@example.com",
@@ -110,11 +128,14 @@ describe("rss 2.0", () => {
   });
   it("should generate a valid feed with audio", () => {
     sampleFeed.addItem({
-      title: "Hello World",
+      title: { text: "Hello World", type: "text" },
       link: "https://example.com/hello-world3",
-      description: "This is an article about Hello World.",
-      content: "Content of my item",
-      author: [
+      description: {
+        text: "This is an article about Hello World.",
+        type: "text",
+      },
+      content: { text: "Content of my item", type: "text" },
+      authors: [
         {
           name: "Jane Doe",
           email: "janedoe@example.com",
@@ -152,7 +173,11 @@ describe("rss 2.0", () => {
         },
       ],
       date: updated,
-      audio: { url: "https://example.com/hello-world.mp3", length: 12665, type: "audio/mpeg" },
+      audio: {
+        url: "https://example.com/hello-world.mp3",
+        length: 12665,
+        type: "audio/mpeg",
+      },
       published,
     });
     const actual = sampleFeed.rss2();
@@ -171,19 +196,24 @@ describe("rss 2.0", () => {
       hub: "wss://example.com/",
       updated, // optional, default = today
 
-      author: {
-        name: "John Doe",
-        email: "johndoe@example.com",
-        link: "https://example.com/johndoe",
-      },
+      authors: [
+        {
+          name: "John Doe",
+          email: "johndoe@example.com",
+          link: "https://example.com/johndoe",
+        },
+      ],
     });
     sampleFeed.addItem({
-      title: "Hello World",
+      title: { text: "Hello World", type: "text" },
       id: "419c523a-28f4-489c-877e-9604be64c005",
       link: "https://example.com/hello-world4",
-      description: "This is an article about Hello World.",
-      content: "Content of my item",
-      author: [
+      description: {
+        text: "This is an article about Hello World.",
+        type: "text",
+      },
+      content: { text: "Content of my item", type: "text" },
+      authors: [
         {
           name: "Jane Doe",
           email: "janedoe@example.com",
