@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OPML render & parse OPML 1`] = `
+"<?xml version="1.0" encoding="utf-8"?>
+<opml version="2.0">
+    <head>
+        <title>my test opml</title>
+        <dateCreated>Thu, 13 Oct 2005 15:34:07 GMT</dateCreated>
+        <dateModified>Thu, 13 Oct 2005 15:34:07 GMT</dateModified>
+        <ownerName>Jon</ownerName>
+        <ownerEmail>jon@example.com</ownerEmail>
+        <expansionState>1, 5, 6</expansionState>
+        <windowTop>100</windowTop>
+        <windowLeft>100</windowLeft>
+        <windowBottom>200</windowBottom>
+        <windowRight>200</windowRight>
+    </head>
+    <body>
+        <outline type="rss" text="CNET News.com" description="Tech news and business reports by CNET News.com. Focused on information technology, core topics include computers, hardware, software, networking, and Internet media." htmlUrl="http://news.com.com/" language="unknown" title="CNET News.com" version="RSS2" xmlUrl="http://news.com.com/2547-1_3-0-5.xml"/>
+        <outline text="United States">
+            <outline text="Far West">
+                <outline text="Alaska"/>
+                <outline text="California"/>
+                <outline text="Hawaii"/>
+            </outline>
+        </outline>
+        <outline type="link" text="Scripting News sites" created="Sun, 16 Oct 2005 05:56:10 GMT" url="http://hosting.opml.org/dave/mySites.opml"/>
+    </body>
+</opml>"
+`;

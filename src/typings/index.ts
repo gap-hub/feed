@@ -1,9 +1,3 @@
-export interface CustomField {
-  [key: string]: CustomFieldValue;
-}
-
-export type CustomFieldValue = string | number | boolean | undefined;
-
 export interface Text {
   type?: "text" | "html";
   text: string;
@@ -95,3 +89,72 @@ export interface FeedParseOptions {
   headers?: Record<string, string>;
   maxRedirects?: number;
 }
+
+export interface OpmlOptions {
+  version: string;
+  head: OpmlHeadOptions;
+  body: OpmlBodyOptions;
+}
+
+export interface OpmlHeadOptions {
+  title?: string;
+  description?: string;
+  dateCreated?: Date;
+  dateModified?: Date;
+  ownerName?: string;
+  ownerEmail?: string;
+  ownerId?: string;
+  docs?: string;
+  expansionState?: number[];
+  vertScrollState?: number;
+  windowTop?: number;
+  windowLeft?: number;
+  windowBottom?: number;
+  windowRight?: number;
+  [key: string]: any;
+}
+
+export interface OpmlBodyOptions {
+  outlines: OpmlOutlineOptions[];
+}
+
+export interface BaseOpmlOutlineOptions {
+  text: string;
+  // type: string;
+  isComment?: boolean;
+  isBreakpoint?: boolean;
+  category?: string;
+  created?: Date;
+  outlines?: OpmlOutlineOptions[];
+}
+
+export interface RSSOpmlOutlineOptions extends BaseOpmlOutlineOptions {
+  type: "rss";
+  xmlUrl: string;
+  title?: string;
+  description?: string;
+  htmlUrl?: string;
+  language?: string;
+  version?: string;
+}
+
+export interface LinkOpmlOutlineOptions extends BaseOpmlOutlineOptions {
+  type: "link";
+  url: string;
+}
+
+export interface IncludeOpmlOutlineOptions extends BaseOpmlOutlineOptions {
+  type: "include";
+  url: string;
+}
+
+export interface OtherOpmlOutlineOptions extends BaseOpmlOutlineOptions {
+  type?: Exclude<string, "rss" | "link" | "include">;
+  [key: string]: any;
+}
+
+export type OpmlOutlineOptions =
+  | RSSOpmlOutlineOptions
+  | LinkOpmlOutlineOptions
+  | IncludeOpmlOutlineOptions
+  | OtherOpmlOutlineOptions;

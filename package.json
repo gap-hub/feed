@@ -1,7 +1,7 @@
 {
   "name": "@gaphub/feed",
-  "version": "5.0.0",
-  "description": "Feed is a RSS, Atom and JSON feed generator/parser for Node.js, making content syndication simple and intuitive!",
+  "version": "5.1.0",
+  "description": "@gaphub/feed is a RSS, Atom, JSON feed and OPML generator/parser for Node.js, making content syndication simple and intuitive!",
   "homepage": "https://github.com/gap-hub/feed",
   "author": "Jon Zhang <jonzhang520s@gmail.com>",
   "license": "MIT",
@@ -30,6 +30,7 @@
     "rss",
     "atom",
     "feed",
+    "opml",
     "syndication",
     "xml",
     "json",
@@ -40,7 +41,6 @@
   ],
   "dependencies": {
     "axios": "^1.7.7",
-    "ky": "^1.7.2",
     "xml-js": "^1.6.11"
   },
   "devDependencies": {

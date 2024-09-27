@@ -2,15 +2,18 @@ import axios from "axios";
 import * as convert from "xml-js";
 
 import { Feed } from "../feed";
+import { Opml } from "../opml";
 import { FeedParseOptions } from "../typings";
-import { isURL } from "../utils";
+import { isString } from "../utils";
 import { parseAtom } from "./atom";
 import { parseJSON } from "./json";
+import { parseOPML } from "./opml";
 import { parseRSS } from "./rss";
 
 const DEFAULT_HEADERS = {
   "User-Agent": "@gaphub/feed-parser",
-  Accept: "application/rss+xml, application/atom+xml, application/json",
+  Accept:
+    "application/rss+xml, application/atom+xml, application/json, text/xml",
 };
 const DEFAULT_TIMEOUT = 60_000;
 const DEFAULT_MAX_REDIRECTS = 5;
@@ -29,6 +32,9 @@ export class FeedParser {
   private readonly etags = new Map<string, string>();
   private readonly lastModified = new Map<string, string>();
 
+  /**
+   * @deprecated
+   */
   async parse(
     feedURLOrContent: string,
     options?: FeedParseOptions,
@@ -37,11 +43,25 @@ export class FeedParser {
       ...defaultFeedParseOptions,
       ...options,
     };
-    const content = await this.getContent(feedURLOrContent, opts);
+    const content =
+      (await this.getContentFromURL(feedURLOrContent, opts)) ?? "";
     return await this.parseString(content);
   }
 
-  async parseString(content: string): Promise<Feed | null> {
+  async parseURL(url: string | URL, options?: FeedParseOptions) {
+    const opts = {
+      ...defaultFeedParseOptions,
+      ...options,
+    };
+    if (isString(url)) {
+      // check the string is a valid URL
+      url = new URL(url);
+    }
+    const content = (await this.getContentFromURL(url.toString(), opts)) ?? "";
+    return await this.parseString(content);
+  }
+
+  parseString(content: string): Feed | null {
     try {
       const jsonFeed = JSON.parse(content);
       return parseJSON(jsonFeed);
@@ -58,14 +78,23 @@ export class FeedParser {
     return null;
   }
 
-  private async getContent(
-    urlOrContent: string,
-    options: FeedParseOptions,
-  ): Promise<string> {
-    if (!isURL(urlOrContent)) {
-      return urlOrContent;
+  async parseOPMLFromURL(
+    url: string | URL,
+    options?: FeedParseOptions,
+  ): Promise<Opml | null> {
+    const opts = {
+      ...defaultFeedParseOptions,
+      ...options,
+    };
+    const content = (await this.getContentFromURL(url.toString(), opts)) ?? "";
+    return this.parseOPMLString(content);
+  }
+
+  parseOPMLString(content: string): Opml | null {
+    if (!content) {
+      return null;
     }
-    return (await this.getContentFromURL(urlOrContent, options)) ?? "";
+    return parseOPML(content);
   }
 
   private async getContentFromURL(

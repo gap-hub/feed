@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://github.com/facebook/jest"><img src="https://img.shields.io/badge/tested_with-jest-99424f.svg" alt="Tested with Jest"></a> <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
-<p align="center"><code>@gaphub/feed</code> - <strong>RSS 2.0, JSON Feed 1.0, and Atom 1.0</strong> generator/parser for <strong>Node.js</strong><br>
+<p align="center"><code>@gaphub/feed</code> - <strong>RSS 2.0, JSON Feed 1.0, Atom 1.0 and OPML 2.0</strong> generator/parser for <strong>Node.js</strong><br>
 Making content syndication simple and intuitive!</p>
 
 ---
@@ -19,8 +19,7 @@ Making content syndication simple and intuitive!</p>
 - Support parse JSON Feed/Atom Feed/RSS Feed to `Feed` object
 - Style your feed with XSLT. You can use the `stylesheet` option to add a custom stylesheet to your feed.
 - Support for JSON Feed 1.1
-
-## Fixes
+- Support for OPML 2.0
 
 # 🔨 Getting Started
 
@@ -127,11 +126,44 @@ console.log(feed.json1());
 import { FeedParser } from "@gaphub/feed";
 
 const parser = new FeedParser();
-// const feed = parser.parse("<feed>...</feed>");
 // const feed = parser.parseString("<feed>...</feed>");
-const feed = parser.parse("https://example.com/feed.rss");
+const feed = parser.parseURL("https://example.com/feed.rss");
 
 console.log(feed);
+```
+
+### Generate and Parse OPML
+
+```js
+import { FeedParser, OPML } from "@gaphub/feed";
+
+// Generate OPML
+const opml = new Opml();
+opml.setHead("title", "my test opml");
+opml.setHead("dateCreated", new Date("Thu, 13 Oct 2005 15:34:07 GMT"));
+opml.head.dateModified = new Date("Thu, 13 Oct 2005 15:34:07 GMT");
+opml.head.ownerName = "Jon";
+opml.addOutline({
+  text: "United States",
+  outlines: [
+    {
+      text: "Far West",
+      outlines: [
+        { text: "Alaska" },
+        { text: "California" },
+        { text: "Hawaii" },
+      ],
+    },
+  ],
+});
+const xml = opml.toString();
+console.log(xml);
+
+// Parse OPML
+const parser = new FeedParser();
+// const parsedOPML = parser.parseOPMLFromURL("https://...");
+const parsedOPML = parser.parseOPMLString(xml);
+console.log(parsedOPML);
 ```
 
 ## More Information
