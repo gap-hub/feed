@@ -1,6 +1,6 @@
 {
   "name": "@gaphub/feed",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "@gaphub/feed is a RSS, Atom, JSON feed and OPML generator/parser for Node.js, making content syndication simple and intuitive!",
   "homepage": "https://github.com/gap-hub/feed",
   "author": "Jon Zhang <jonzhang520s@gmail.com>",
