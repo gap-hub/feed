@@ -1,13 +1,20 @@
+import { defaultTextType } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
-import { Category, Extension } from "../typings";
+import {
+  Category,
+  Extension,
+  combinedFeedFields,
+  combinedFeedItemFields,
+} from "../typings";
+import { isString } from "../utils";
 
 /**
  * Returns a JSON feed
  * @param ins
  */
 export function renderJSON(ins: Feed) {
-  const { options, items, extensions } = ins;
+  const { options, items, extensions, customFields } = ins;
 
   const feed: any = {
     version: "https://jsonfeed.org/version/1.1",
@@ -59,14 +66,27 @@ export function renderJSON(ins: Feed) {
     feed[e.name] = e.objects;
   });
 
+  Object.keys(customFields)
+    .filter((key) => !combinedFeedFields.includes(key))
+    .forEach((key) => {
+      const value = customFields[key];
+      if (value && value.length > 0) {
+        feed[key] = value;
+      }
+    });
+
   feed.items = items.map((userFeedItem: FeedItem) => {
     const item = userFeedItem.options;
+    const itemCustomFields = userFeedItem.customFields;
     const feedItem: any = {
       id: item.id,
     };
 
     if (item.content) {
-      if (item.content.type === "text") {
+      if (isString(item.content)) {
+        feedItem[defaultTextType === "html" ? "content_html" : "content_text"] =
+          item.content;
+      } else if (item.content.type === "text") {
         feedItem.content_text = item.content.text;
       } else {
         feedItem.content_html = item.content.text;
@@ -76,10 +96,12 @@ export function renderJSON(ins: Feed) {
       feedItem.url = item.link;
     }
     if (item.title) {
-      feedItem.title = item.title.text;
+      feedItem.title = isString(item.title) ? item.title : item.title.text;
     }
     if (item.description) {
-      feedItem.summary = item.description.text;
+      feedItem.summary = isString(item.description)
+        ? item.description
+        : item.description.text;
     }
 
     if (item.image) {
@@ -124,6 +146,15 @@ export function renderJSON(ins: Feed) {
         feedItem[e.name] = e.objects;
       });
     }
+
+    Object.keys(itemCustomFields)
+      .filter((key) => !combinedFeedItemFields.includes(key))
+      .forEach((key) => {
+        const value = itemCustomFields[key];
+        if (value && value.length > 0) {
+          feedItem[key] = value;
+        }
+      });
 
     return feedItem;
   });

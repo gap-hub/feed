@@ -4,17 +4,13 @@ export interface Text {
 }
 
 export interface ItemOptions {
-  title: Text;
-  /**
-   * The id of the feed item.
-   *
-   */
+  title: string | Text;
   id?: string;
   link: string;
   date: Date;
 
-  description?: Text;
-  content?: Text;
+  description?: string | Text;
+  content?: string | Text;
   category?: Category[];
 
   // guid?: string | Guid;
@@ -158,3 +154,108 @@ export type OpmlOutlineOptions =
   | LinkOpmlOutlineOptions
   | IncludeOpmlOutlineOptions
   | OtherOpmlOutlineOptions;
+
+export const atom1FeedFields: string[] = [
+  "_attributes",
+  "_declaration",
+  "_instruction",
+  "id",
+  "title",
+  "updated",
+  "generator",
+  "author",
+  "link",
+  "subtitle",
+  "logo",
+  "icon",
+  "rights",
+  "category",
+  "contributor",
+  "entry",
+];
+
+export const atom1FeedItemFields: string[] = [
+  "title",
+  "id",
+  "link",
+  "updated",
+  "summary",
+  "content",
+  "author",
+  "category",
+  "contributor",
+  "published",
+  "rights",
+];
+
+export const rssFeedFields: string[] = [
+  "_attributes",
+  "_declaration",
+  "_instruction",
+  "title",
+  "link",
+  "description",
+  "lastBuildDate",
+  "docs",
+  "generator",
+  "language",
+  "ttl",
+  "image",
+  "copyright",
+  "category",
+  "atom:link",
+  "item",
+];
+
+export const rssFeedItemFields: string[] = [
+  "title",
+  "link",
+  "guid",
+  "id",
+  "pubDate",
+  "description",
+  "content:encoded",
+  "author",
+  "category",
+  "enclosure",
+];
+
+export const jsonFeedFields: string[] = [
+  "version",
+  "title",
+  "home_page_url",
+  "feed_url",
+  "description",
+  "icon",
+  "favicon",
+  "language",
+  "authors",
+  "items",
+];
+
+export const jsonFeedItemFields: string[] = [
+  "id",
+  "content_text",
+  "content_html",
+  "url",
+  "title",
+  "summary",
+  "image",
+  "date_modified",
+  "date_published",
+  "authors",
+  "tags",
+  "extensions",
+];
+
+export const combinedFeedFields: string[] = [
+  ...rssFeedFields,
+  ...atom1FeedFields,
+  ...jsonFeedFields,
+];
+
+export const combinedFeedItemFields: string[] = [
+  ...rssFeedItemFields,
+  ...atom1FeedItemFields,
+  ...jsonFeedItemFields,
+];

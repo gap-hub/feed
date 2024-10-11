@@ -4,11 +4,11 @@ import { sampleFeed } from "./setup";
 describe("atom 1.0", () => {
   it("should generate a valid feed", async () => {
     const actual = sampleFeed.atom1();
-    expect(actual).toMatchSnapshot();
+    expect(actual).toMatchSnapshot("generated");
 
     const parser = new FeedParser();
     const parsedFeed = await parser.parseString(actual);
     expect(parsedFeed).not.toBeNull();
-    expect(parsedFeed!.atom1()).toMatchSnapshot();
+    expect(parsedFeed!.atom1()).toMatchSnapshot("parsed");
   });
 });

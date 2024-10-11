@@ -1,43 +1,16 @@
 import { defaultTextType } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
-import { Extension, Text } from "../typings";
+import {
+  Extension,
+  Text,
+  combinedFeedFields,
+  combinedFeedItemFields,
+} from "../typings";
 
 const fields = {
-  feed: [
-    "version",
-    "title",
-    "home_page_url",
-    "feed_url",
-    "description",
-    "user_comment",
-    "next_url",
-    "icon",
-    "favicon",
-    "author",
-    "authors",
-    "language",
-    "expired",
-    "hubs",
-    "items",
-  ],
-  item: [
-    "id",
-    "url",
-    "external_url",
-    "title",
-    "content_text",
-    "content_html",
-    "summary",
-    "image",
-    "banner_image",
-    "date_published",
-    "date_modified",
-    "author",
-    "authors",
-    "tags",
-    "language",
-  ],
+  feed: combinedFeedFields,
+  item: combinedFeedItemFields,
 };
 
 export function parseJSON(json: any): Feed {
@@ -72,7 +45,9 @@ export function parseJSON(json: any): Feed {
       });
     });
   }
-  feed.extensions = parseJSONExtensions(json, true);
+  const [extensions, otherFields] = parseOtherFields(json, true);
+  feed.extensions = extensions;
+  feed.setCustomFields(otherFields);
 
   if (Array.isArray(json.items)) {
     json.items.forEach((item: any) => {
@@ -122,7 +97,9 @@ export function parseJSON(json: any): Feed {
         });
       }
 
-      feedItem.setExtensions(parseJSONExtensions(item, false));
+      const [extensions, otherFields] = parseOtherFields(item, false);
+      feedItem.setExtensions(extensions);
+      feedItem.setCustomFields(otherFields);
 
       feed.addItem(feedItem);
     });
@@ -131,15 +108,24 @@ export function parseJSON(json: any): Feed {
   return feed;
 }
 
-function parseJSONExtensions(json: any, isFeed: boolean) {
+function parseOtherFields(
+  json: any,
+  isFeed: boolean,
+): [Extension[], Record<string, string | string[]>] {
   const extensions: Extension[] = [];
-  Object.keys(json).forEach((key: string) => {
+  const otherFields: Record<string, string | string[]> = {};
+  const builtinKeys: Array<string> = fields[isFeed ? "feed" : "item"];
+  Object.keys(json).forEach((key) => {
     const value = json[key];
-    const builtinKeys: Array<string> = fields[isFeed ? "feed" : "item"];
     if (builtinKeys.indexOf(key) !== -1) {
       return;
     }
-    extensions.push({ name: key, objects: value });
+    if (key.startsWith("_")) {
+      extensions.push({ name: key, objects: value });
+    } else {
+      otherFields[key] = value;
+    }
   });
-  return extensions;
+
+  return [extensions, otherFields];
 }

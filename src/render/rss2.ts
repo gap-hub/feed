@@ -3,14 +3,19 @@ import * as convert from "xml-js";
 import { generator } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
-import { Category, Enclosure } from "../typings";
-import { isURL, sanitize } from "../utils";
+import {
+  Category,
+  Enclosure,
+  combinedFeedFields,
+  combinedFeedItemFields,
+} from "../typings";
+import { isString, isURL, isValidTagName, sanitize } from "../utils";
 
 /**
  * Returns a RSS 2.0 feed
  */
 export function renderRSS(ins: Feed) {
-  const { options } = ins;
+  const { options, customFields } = ins;
   let isAtom = false;
   let isContent = false;
 
@@ -129,6 +134,18 @@ export function renderRSS(ins: Feed) {
     };
   }
 
+  Object.keys(customFields)
+    .filter((key) => !combinedFeedFields.includes(key))
+    .forEach((key) => {
+      if (!isValidTagName(key)) {
+        throw new Error(`Invalid XML tag name: ${key}`);
+      }
+      const value = customFields[key];
+      if (value && value.length > 0) {
+        base.rss.channel[key] = value;
+      }
+    });
+
   /**
    * Channel Categories
    * https://validator.w3.org/feed/docs/rss2.html#hrelementsOfLtitemgt
@@ -140,7 +157,9 @@ export function renderRSS(ins: Feed) {
     const entry = feedItem.options;
 
     if (entry.title) {
-      item.title = { _cdata: entry.title?.text };
+      item.title = {
+        _cdata: isString(entry.title) ? entry.title : entry.title.text,
+      };
     }
 
     if (entry.link) {
@@ -166,12 +185,18 @@ export function renderRSS(ins: Feed) {
     }
 
     if (entry.description) {
-      item.description = { _cdata: entry.description.text };
+      item.description = {
+        _cdata: isString(entry.description)
+          ? entry.description
+          : entry.description.text,
+      };
     }
 
     if (entry.content) {
       isContent = true;
-      item["content:encoded"] = { _cdata: entry.content.text };
+      item["content:encoded"] = {
+        _cdata: isString(entry.content) ? entry.content : entry.content.text,
+      };
     }
     /**
      * Item Author
@@ -213,6 +238,18 @@ export function renderRSS(ins: Feed) {
       item.enclosure = formatEnclosure(entry.video, "video");
     }
 
+    Object.keys(feedItem.customFields)
+      .filter((key) => !combinedFeedItemFields.includes(key))
+      .forEach((key) => {
+        if (!isValidTagName(key)) {
+          throw new Error(`Invalid XML tag name: ${key}`);
+        }
+        const value = feedItem.customFields[key];
+        if (value && value.length > 0) {
+          item[key] = value;
+        }
+      });
+
     base.rss.channel.item.push(item);
   });
 
@@ -245,9 +282,9 @@ const formatEnclosure = (
     const type = new URL(sanitize(enclosure)!).pathname.split(".").slice(-1)[0];
     return {
       _attributes: {
-        url: enclosure,
         length: 0,
         type: `${mimeCategory}/${type}`,
+        url: enclosure,
       },
     };
   }

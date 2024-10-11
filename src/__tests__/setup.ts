@@ -31,6 +31,8 @@ export const sampleFeed = new Feed({
 });
 sampleFeed.stylesheet = "https://example.com/stylesheet.xsl";
 sampleFeed.addCategory("Technology");
+sampleFeed.setCustomField("customField", "customValue");
+sampleFeed.setCustomField("customFieldArray", ["customValue1", "customValue2"]);
 
 sampleFeed.addContributor("Jon Zhang");
 sampleFeed.addContributor({
@@ -98,6 +100,11 @@ item.options.enclosure = {
 };
 item.setPublished(published);
 item.setCopyright("All rights reserved 2024, Jon Zhang");
+item.setCustomField("customFieldItem", "customValueItem");
+item.setCustomField("customFieldItemArray", [
+  "customValueItem1",
+  "customValueItem2",
+]);
 
 sampleFeed.addItem(item);
 

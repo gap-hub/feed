@@ -3,6 +3,7 @@ import * as convert from "xml-js";
 import { defaultTextType } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
+import { combinedFeedFields, combinedFeedItemFields } from "../typings";
 
 export function parseAtom(xml: convert.ElementCompact): Feed {
   const feedXml = xml.feed;
@@ -18,6 +19,14 @@ export function parseAtom(xml: convert.ElementCompact): Feed {
     image: feedXml.logo?._text,
     favicon: feedXml.icon?._text,
   });
+
+  if (xml._instruction && xml._instruction["xml-stylesheet"]) {
+    const attrs = xml._instruction["xml-stylesheet"].split(" ");
+    const hrefAttr = attrs.find((attr) => attr.startsWith("href="))?.split("=");
+    if (hrefAttr && hrefAttr.length > 1 && hrefAttr[1]) {
+      feed.stylesheet = hrefAttr[1].replace(/["]/g, "");
+    }
+  }
 
   if (feedXml.author) {
     feed.options.authors = [
@@ -71,14 +80,29 @@ export function parseAtom(xml: convert.ElementCompact): Feed {
     }
   }
 
+  // Custom fields
+  Object.keys(feedXml)
+    .filter((key) => !combinedFeedFields.includes(key))
+    .forEach((key) => {
+      const value = feedXml[key];
+      if (Array.isArray(value)) {
+        feed.setCustomField(
+          key,
+          value?.map((item) => item?._text),
+        );
+      } else {
+        feed.setCustomField(key, value?._text);
+      }
+    });
+
   if (feedXml.entry) {
     if (Array.isArray(feedXml.entry)) {
       feedXml.entry.forEach((item: any) => {
         buildFeedItem(item, feed);
       });
+    } else {
+      buildFeedItem(feedXml.entry, feed);
     }
-  } else {
-    buildFeedItem(feedXml.entry, feed);
   }
 
   return feed;
@@ -166,6 +190,20 @@ function buildFeedItem(entry: convert.ElementCompact, feed: Feed) {
       });
     }
   }
+
+  Object.keys(entry)
+    .filter((key) => !combinedFeedItemFields.includes(key))
+    .forEach((key) => {
+      const value = entry[key];
+      if (Array.isArray(value)) {
+        item.setCustomField(
+          key,
+          value?.map((item) => item?._text),
+        );
+      } else {
+        item.setCustomField(key, value?._text);
+      }
+    });
 
   feed.addItem(item);
 }

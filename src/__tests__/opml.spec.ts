@@ -54,7 +54,7 @@ describe("OPML", () => {
       url: "http://hosting.opml.org/dave/mySites.opml",
     });
     const xml = opml.toString();
-    expect(xml).toMatchSnapshot();
+    expect(xml).toMatchSnapshot("generated");
 
     const parsedOPML = new FeedParser().parseOPMLString(xml);
     expect(parsedOPML).toStrictEqual(opml);

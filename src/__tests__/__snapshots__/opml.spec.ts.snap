@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`OPML render & parse OPML 1`] = `
+exports[`OPML render & parse OPML: generated 1`] = `
 "<?xml version="1.0" encoding="utf-8"?>
 <opml version="2.0">
     <head>

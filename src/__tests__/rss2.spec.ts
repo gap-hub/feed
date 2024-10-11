@@ -6,13 +6,14 @@ import { published, sampleFeed, updated } from "./setup";
 describe("rss 2.0", () => {
   it("should generate a valid feed", async () => {
     const actual = sampleFeed.rss2();
-    expect(actual).toMatchSnapshot();
+    expect(actual).toMatchSnapshot("generated");
 
     const parser = new FeedParser();
     const parsedFeed = await parser.parseString(actual);
     expect(parsedFeed).not.toBeNull();
-    expect(parsedFeed!.rss2()).toMatchSnapshot();
+    expect(parsedFeed!.rss2()).toMatchSnapshot("parsed");
   });
+
   it("should generate a valid feed with image properties", () => {
     const item = new FeedItem({
       title: { text: "Hello World1", type: "text" },
@@ -72,6 +73,7 @@ describe("rss 2.0", () => {
     const actual = sampleFeed.rss2();
     expect(actual).toMatchSnapshot();
   });
+
   it("should generate a valid feed with enclosure", () => {
     sampleFeed.addItem({
       title: { text: "Hello World", type: "text" },
@@ -126,6 +128,7 @@ describe("rss 2.0", () => {
     const actual = sampleFeed.rss2();
     expect(actual).toMatchSnapshot();
   });
+
   it("should generate a valid feed with audio", () => {
     sampleFeed.addItem({
       title: { text: "Hello World", type: "text" },
@@ -183,6 +186,7 @@ describe("rss 2.0", () => {
     const actual = sampleFeed.rss2();
     expect(actual).toMatchSnapshot();
   });
+
   it("should generate a valid feed with video", () => {
     const sampleFeed = new Feed({
       title: "Feed Title",

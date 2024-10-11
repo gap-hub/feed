@@ -20,6 +20,7 @@ Making content syndication simple and intuitive!</p>
 - Style your feed with XSLT. You can use the `stylesheet` option to add a custom stylesheet to your feed.
 - Support for JSON Feed 1.1
 - Support for OPML 2.0
+- Support custom fields for feed and feed items
 
 # 🔨 Getting Started
 

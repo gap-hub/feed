@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`json 1 should generate a valid feed and parse back to feed 1`] = `
+exports[`json 1 should generate a valid feed and parse back to feed: generated 1`] = `
 "{
     "version": "https://jsonfeed.org/version/1.1",
     "title": "Feed Title",
@@ -20,6 +20,11 @@ exports[`json 1 should generate a valid feed and parse back to feed 1`] = `
         "about": "just an extension example",
         "dummy": "example"
     },
+    "customField": "customValue",
+    "customFieldArray": [
+        "customValue1",
+        "customValue2"
+    ],
     "items": [
         {
             "id": "https://example.com/hello-world?id=this&that=true",
@@ -54,13 +59,18 @@ exports[`json 1 should generate a valid feed and parse back to feed 1`] = `
             "_item_extension_2": {
                 "about": "just a second item extension example",
                 "dummy1": "example"
-            }
+            },
+            "customFieldItem": "customValueItem",
+            "customFieldItemArray": [
+                "customValueItem1",
+                "customValueItem2"
+            ]
         }
     ]
 }"
 `;
 
-exports[`json 1 should generate a valid feed and parse back to feed 2`] = `
+exports[`json 1 should generate a valid feed and parse back to feed: parsed 1`] = `
 "{
     "version": "https://jsonfeed.org/version/1.1",
     "title": "Feed Title",
@@ -80,6 +90,11 @@ exports[`json 1 should generate a valid feed and parse back to feed 2`] = `
         "about": "just an extension example",
         "dummy": "example"
     },
+    "customField": "customValue",
+    "customFieldArray": [
+        "customValue1",
+        "customValue2"
+    ],
     "items": [
         {
             "id": "https://example.com/hello-world?id=this&that=true",
@@ -114,7 +129,12 @@ exports[`json 1 should generate a valid feed and parse back to feed 2`] = `
             "_item_extension_2": {
                 "about": "just a second item extension example",
                 "dummy1": "example"
-            }
+            },
+            "customFieldItem": "customValueItem",
+            "customFieldItemArray": [
+                "customValueItem1",
+                "customValueItem2"
+            ]
         }
     ]
 }"

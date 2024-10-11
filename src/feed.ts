@@ -13,6 +13,7 @@ export class Feed {
   contributors: Author[] = [];
   extensions: Extension[] = [];
   private _stylesheetHref?: string;
+  readonly customFields: Record<string, string | string[]> = {};
 
   constructor(options: FeedOptions) {
     this.options = options;
@@ -60,6 +61,20 @@ export class Feed {
 
   get stylesheet(): string | undefined {
     return this._stylesheetHref;
+  }
+
+  setCustomField(field: string, value: string | string[]) {
+    this.customFields[field] = value;
+  }
+
+  setCustomFields(fields: Record<string, string | string[]>) {
+    Object.keys(fields).forEach((key) => {
+      this.customFields[key] = fields[key];
+    });
+  }
+
+  getCustomField(field: string): string | string[] | undefined {
+    return this.customFields[field];
   }
 
   /**

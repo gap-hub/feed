@@ -3,40 +3,12 @@ import * as convert from "xml-js";
 import { defaultTextType } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
-import { Author, Enclosure } from "../typings";
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const fields = {
-  feed: [
-    "title",
-    "link",
-    "description",
-    "language",
-    "copyright",
-    "webMaster", // 缺失
-    "pubDate", // 缺失
-    "lastBuildDate", // => updated
-    "category",
-    "generator",
-    "docs",
-    "cloud", //
-    "ttl",
-    "image",
-    "item",
-  ],
-  item: [
-    "title",
-    "link",
-    "description",
-    "author",
-    "category",
-    "comments",
-    "enclosure",
-    "guid",
-    "pubDate",
-    "source",
-  ],
-};
+import {
+  Author,
+  Enclosure,
+  combinedFeedFields,
+  combinedFeedItemFields,
+} from "../typings";
 
 export function parseRSS(xml: convert.ElementCompact): Feed {
   if (xml["rdf:RDF"]) {
@@ -53,7 +25,12 @@ function buildRSS09(xml: convert.ElementCompact): Feed {
     channel = channel[0];
   }
   const items = channel.item;
-  return buildRSS(channel, items);
+  const feed = buildRSS(channel, items);
+  const stylesheetHref = parseStylesheet(xml);
+  if (stylesheetHref) {
+    feed.stylesheet = stylesheetHref;
+  }
+  return feed;
 }
 
 function buildRSS1(xml: convert.ElementCompact): Feed {
@@ -62,7 +39,12 @@ function buildRSS1(xml: convert.ElementCompact): Feed {
     channel = channel[0];
   }
   const items = channel.item;
-  return buildRSS(channel, items);
+  const feed = buildRSS(channel, items);
+  const stylesheetHref = parseStylesheet(xml);
+  if (stylesheetHref) {
+    feed.stylesheet = stylesheetHref;
+  }
+  return feed;
 }
 
 function buildRSS2(xml: convert.ElementCompact): Feed {
@@ -72,7 +54,10 @@ function buildRSS2(xml: convert.ElementCompact): Feed {
   }
   const items = channel.item;
   const feed = buildRSS(channel, items);
-
+  const stylesheetHref = parseStylesheet(xml);
+  if (stylesheetHref) {
+    feed.stylesheet = stylesheetHref;
+  }
   return feed;
 }
 
@@ -107,7 +92,7 @@ function buildRSS(
     "item",
   ];
   Object.keys(channel).forEach((key) => {
-    if (ignoreKeys.indexOf(key)) {
+    if (ignoreKeys.includes(key)) {
       return;
     }
     if (key === "ttl") {
@@ -140,6 +125,16 @@ function buildRSS(
         });
       } else if (channel["atom:link"]?._attributes?.href) {
         buildAtomLink(channel["atom:link"], feed);
+      }
+    } else if (!combinedFeedFields.includes(key)) {
+      const value = channel[key];
+      if (Array.isArray(value)) {
+        feed.setCustomField(
+          key,
+          value.map((item) => item?._text),
+        );
+      } else {
+        feed.setCustomField(key, value?._text);
       }
     }
   });
@@ -226,6 +221,20 @@ function buildItem(item: convert.ElementCompact, feed: Feed) {
     parseItemEnclosure(item.enclosure, feedItem);
   }
 
+  Object.keys(item)
+    .filter((key) => !combinedFeedItemFields.includes(key))
+    .forEach((key) => {
+      const value = item[key];
+      if (Array.isArray(value)) {
+        feedItem.setCustomField(
+          key,
+          value.map((item) => item?._text),
+        );
+      } else {
+        feedItem.setCustomField(key, value?._text);
+      }
+    });
+
   feed.addItem(feedItem);
 }
 
@@ -234,8 +243,8 @@ function parseItemAuthor(author: string): Author {
   const match = author.match(authorRegex);
   if (match) {
     return {
-      name: match[1].trim(),
-      email: match[2].trim(),
+      email: match[1].trim(),
+      name: match[2].trim(),
     };
   }
   return {
@@ -248,9 +257,10 @@ function parseItemEnclosure(
   enclosure: convert.ElementCompact,
   feedItem: FeedItem,
 ) {
-  let type = enclosure._attributes?.type?.toString() || "image";
-  if (type.includes("/")) {
-    type = type.split("/")[0];
+  const originalType = enclosure._attributes?.type?.toString();
+  let type = "image";
+  if (originalType && originalType.includes("/")) {
+    type = originalType.split("/")[0];
   }
   let length: number | undefined = undefined;
   if (enclosure._attributes?.length) {
@@ -261,7 +271,7 @@ function parseItemEnclosure(
   }
   const result: Enclosure = {
     url: enclosure._attributes?.url?.toString() || "",
-    type,
+    type: originalType,
     length,
     title: enclosure._attributes?.title?.toString(),
   };
@@ -273,4 +283,15 @@ function parseItemEnclosure(
   } else if (type === "video") {
     feedItem.options.video = result;
   }
+}
+
+function parseStylesheet(xml: convert.ElementCompact): string | undefined {
+  if (xml._instruction && xml._instruction["xml-stylesheet"]) {
+    const attrs = xml._instruction["xml-stylesheet"].split(" ");
+    const hrefAttr = attrs.find((attr) => attr.startsWith("href="))?.split("=");
+    if (hrefAttr && hrefAttr.length > 1 && hrefAttr[1]) {
+      return hrefAttr[1].replace(/["]/g, "");
+    }
+  }
+  return undefined;
 }

@@ -4,6 +4,7 @@ import { isString } from "./utils";
 
 export class FeedItem {
   readonly options: ItemOptions;
+  readonly customFields: Record<string, string | string[]> = {};
 
   constructor(options: ItemOptions) {
     this.options = options;
@@ -95,5 +96,19 @@ export class FeedItem {
 
   setExtensions(extensions: Extension[]) {
     this.options.extensions = extensions;
+  }
+
+  setCustomField(field: string, value: string | string[]) {
+    this.customFields[field] = value;
+  }
+
+  setCustomFields(fields: Record<string, string | string[]>) {
+    Object.keys(fields).forEach((key) => {
+      this.customFields[key] = fields[key];
+    });
+  }
+
+  getCustomField(field: string): string | string[] | undefined {
+    return this.customFields[field];
   }
 }

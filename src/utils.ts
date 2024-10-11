@@ -36,3 +36,12 @@ export function isURL(value: string): boolean {
     return false;
   }
 }
+
+/**
+ * Check if the tag name is a valid XML tag name
+ * @param tagName - The tag name to check
+ * @returns True if the tag name is valid, false otherwise
+ */
+export function isValidTagName(tagName: string): boolean {
+  return /^[a-zA-Z_][\w.-]*$/.test(tagName);
+}

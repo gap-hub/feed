@@ -3,15 +3,20 @@ import * as convert from "xml-js";
 import { defaultTextType, generator } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
-import { Author, Category } from "../typings";
-import { sanitize } from "../utils";
+import {
+  Author,
+  Category,
+  combinedFeedFields,
+  combinedFeedItemFields,
+} from "../typings";
+import { isString, isValidTagName, sanitize } from "../utils";
 
 /**
  * Returns an Atom feed
  * @param ins
  */
 export function renderAtom(ins: Feed) {
-  const { options } = ins;
+  const { options, customFields } = ins;
 
   const base: any = {
     _declaration: { _attributes: { version: "1.0", encoding: "utf-8" } },
@@ -95,11 +100,21 @@ export function renderAtom(ins: Feed) {
 
   base.feed.contributor = [];
 
-  ins.contributors.map((contributor: Author) => {
+  ins.contributors.forEach((contributor: Author) => {
     base.feed.contributor.push(formatAuthor(contributor));
   });
 
-  // icon
+  Object.keys(customFields)
+    .filter((key) => !combinedFeedFields.includes(key))
+    .forEach((key) => {
+      if (!isValidTagName(key)) {
+        throw new Error(`Invalid XML tag name: ${key}`);
+      }
+      const value = customFields[key];
+      if (value && value.length > 0) {
+        base.feed[key] = value;
+      }
+    });
 
   base.feed.entry = [];
 
@@ -114,8 +129,12 @@ export function renderAtom(ins: Feed) {
 
     const entry: convert.ElementCompact = {
       title: {
-        _attributes: { type: item.title.type ?? defaultTextType },
-        _cdata: item.title.text,
+        _attributes: {
+          type: isString(item.title)
+            ? defaultTextType
+            : (item.title.type ?? defaultTextType),
+        },
+        _cdata: isString(item.title) ? item.title : item.title.text,
       },
       id: sanitize(item.id || item.link),
       link: [{ _attributes: { href: sanitize(item.link) } }],
@@ -127,15 +146,25 @@ export function renderAtom(ins: Feed) {
     //
     if (item.description) {
       entry.summary = {
-        _attributes: { type: item.description.type ?? defaultTextType },
-        _cdata: item.description.text,
+        _attributes: {
+          type: isString(item.description)
+            ? defaultTextType
+            : (item.description.type ?? defaultTextType),
+        },
+        _cdata: isString(item.description)
+          ? item.description
+          : item.description.text,
       };
     }
 
     if (item.content) {
       entry.content = {
-        _attributes: { type: item.content.type ?? defaultTextType },
-        _cdata: item.content.text,
+        _attributes: {
+          type: isString(item.content)
+            ? defaultTextType
+            : (item.content.type ?? defaultTextType),
+        },
+        _cdata: isString(item.content) ? item.content : item.content.text,
       };
     }
 
@@ -185,6 +214,17 @@ export function renderAtom(ins: Feed) {
     if (item.copyright) {
       entry.rights = item.copyright;
     }
+    Object.keys(feedItem.customFields)
+      .filter((key) => !combinedFeedItemFields.includes(key))
+      .forEach((key) => {
+        if (!isValidTagName(key)) {
+          throw new Error(`Invalid XML tag name: ${key}`);
+        }
+        const value = feedItem.customFields[key];
+        if (value && value.length > 0) {
+          entry[key] = value;
+        }
+      });
 
     base.feed.entry.push(entry);
   });
