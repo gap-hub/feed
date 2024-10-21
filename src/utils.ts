@@ -43,5 +43,11 @@ export function isURL(value: string): boolean {
  * @returns True if the tag name is valid, false otherwise
  */
 export function isValidTagName(tagName: string): boolean {
-  return /^[a-zA-Z_][\w.-]*$/.test(tagName);
+  if (tagName.length === 0) {
+    return false;
+  }
+  if (/^xml/i.test(tagName)) {
+    return false;
+  }
+  return /^[a-zA-Z_][\w.-]*(:[\w.-]+)*$/.test(tagName);
 }

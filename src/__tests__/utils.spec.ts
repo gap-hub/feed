@@ -1,4 +1,4 @@
-import { sanitize } from "../utils";
+import { isValidTagName, sanitize } from "../utils";
 
 describe("Sanitizing", () => {
   it("should sanitize & to &amp;", () => {
@@ -13,5 +13,14 @@ describe("Sanitizing", () => {
   it("should handle undefined", () => {
     let undefined;
     expect(sanitize(undefined)).toBeUndefined();
+  });
+});
+
+describe("isValidTagName", () => {
+  it("should return true for valid tag names", () => {
+    expect(isValidTagName("test")).toBe(true);
+    expect(isValidTagName("dc:creator")).toBe(true);
+    expect(isValidTagName("xml:title")).toBe(false);
+    expect(isValidTagName("")).toBe(false);
   });
 });

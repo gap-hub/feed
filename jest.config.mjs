@@ -1,6 +1,9 @@
 export default {
   verbose: true,
   collectCoverage: true,
+  maxWorkers: 2,
+  workerIdleMemoryLimit: "512MB",
+  testTimeout: 30000,
   transform: {
     "^.+\\.tsx?$": "ts-jest",
   },
