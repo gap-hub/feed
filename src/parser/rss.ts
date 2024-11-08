@@ -3,12 +3,8 @@ import * as convert from "xml-js";
 import { defaultTextType } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
-import {
-  Author,
-  Enclosure,
-  combinedFeedFields,
-  combinedFeedItemFields,
-} from "../typings";
+import { Author, combinedFeedFields, combinedFeedItemFields } from "../typings";
+import { parseItemEnclosure } from "../utils";
 
 export function parseRSS(xml: convert.ElementCompact): Feed {
   if (xml["rdf:RDF"]) {
@@ -251,38 +247,6 @@ function parseItemAuthor(author: string): Author {
     name: author,
     email: "",
   };
-}
-
-function parseItemEnclosure(
-  enclosure: convert.ElementCompact,
-  feedItem: FeedItem,
-) {
-  const originalType = enclosure._attributes?.type?.toString();
-  let type = "image";
-  if (originalType && originalType.includes("/")) {
-    type = originalType.split("/")[0];
-  }
-  let length: number | undefined = undefined;
-  if (enclosure._attributes?.length) {
-    const num = parseInt(enclosure._attributes?.length.toString());
-    if (!isNaN(num)) {
-      length = num;
-    }
-  }
-  const result: Enclosure = {
-    url: enclosure._attributes?.url?.toString() || "",
-    type: originalType,
-    length,
-    title: enclosure._attributes?.title?.toString(),
-  };
-  feedItem.options.enclosure = result;
-  if (type === "image") {
-    feedItem.options.image = result;
-  } else if (type === "audio") {
-    feedItem.options.audio = result;
-  } else if (type === "video") {
-    feedItem.options.video = result;
-  }
 }
 
 function parseStylesheet(xml: convert.ElementCompact): string | undefined {

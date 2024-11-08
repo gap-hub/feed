@@ -7,7 +7,7 @@ describe("atom 1.0", () => {
     expect(actual).toMatchSnapshot("generated");
 
     const parser = new FeedParser();
-    const parsedFeed = await parser.parseString(actual);
+    const parsedFeed = parser.parseString(actual);
     expect(parsedFeed).not.toBeNull();
     expect(parsedFeed!.atom1()).toMatchSnapshot("parsed");
   });

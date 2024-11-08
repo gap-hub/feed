@@ -4,6 +4,7 @@ import { defaultTextType } from "../config";
 import { Feed } from "../feed";
 import { FeedItem } from "../feed-item";
 import { combinedFeedFields, combinedFeedItemFields } from "../typings";
+import { parseItemEnclosure } from "../utils";
 
 export function parseAtom(xml: convert.ElementCompact): Feed {
   const feedXml = xml.feed;
@@ -115,7 +116,7 @@ function buildFeedItem(entry: convert.ElementCompact, feed: Feed) {
       text: entry.title?._cdata ?? entry.title?._text ?? "",
       type: entry.title?._attributes?.type ?? defaultTextType,
     },
-    link: entry.link?._attributes?.href ?? "",
+    link: "",
     date: entry.updated?._text ? new Date(entry.updated?._text) : new Date(),
     description: {
       text: entry.summary?._cdata ?? entry.summary?._text ?? "",
@@ -130,6 +131,20 @@ function buildFeedItem(entry: convert.ElementCompact, feed: Feed) {
       : new Date(),
     copyright: entry.rights?._text,
   });
+  // entry.link?._attributes?.href ?? ""
+  if (entry.link) {
+    if (Array.isArray(entry.link)) {
+      entry.link.forEach((link: any) => {
+        if (link?._attributes?.rel === "enclosure") {
+          parseItemEnclosure(link, item, "href");
+        } else {
+          item.options.link = link._attributes?.href ?? "";
+        }
+      });
+    } else {
+      item.options.link = entry.link._attributes?.href ?? "";
+    }
+  }
 
   if (entry.author) {
     if (Array.isArray(entry.author)) {

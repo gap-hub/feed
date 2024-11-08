@@ -6,6 +6,7 @@ import { FeedItem } from "../feed-item";
 import {
   Author,
   Category,
+  Enclosure,
   combinedFeedFields,
   combinedFeedItemFields,
 } from "../typings";
@@ -168,6 +169,10 @@ export function renderAtom(ins: Feed) {
       };
     }
 
+    if (item.image) {
+      entry.link.push(formatEnclosure(item.image));
+    }
+
     // entry author(s)
     if (Array.isArray(item.authors)) {
       entry.author = [];
@@ -267,6 +272,33 @@ const formatCategory = (category: Category) => {
       label: name,
       scheme,
       term,
+    },
+  };
+};
+
+const formatEnclosure = (
+  enclosure: string | Enclosure,
+  mimeCategory = "image",
+) => {
+  if (typeof enclosure === "string") {
+    const type = new URL(sanitize(enclosure)!).pathname.split(".").slice(-1)[0];
+    return {
+      _attributes: {
+        rel: "enclosure",
+        type: `${mimeCategory}/${type}`,
+        href: enclosure,
+      },
+    };
+  }
+
+  const type = new URL(sanitize(enclosure.url)!).pathname
+    .split(".")
+    .slice(-1)[0];
+  return {
+    _attributes: {
+      rel: "enclosure",
+      type: `${mimeCategory}/${type}`,
+      href: enclosure.url,
     },
   };
 };

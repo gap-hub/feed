@@ -1,3 +1,8 @@
+import * as convert from "xml-js";
+
+import { FeedItem } from "./feed-item";
+import { Enclosure } from "./typings";
+
 /**
  * Sanitize the URL
  * @param url - The URL to sanitize
@@ -50,4 +55,37 @@ export function isValidTagName(tagName: string): boolean {
     return false;
   }
   return /^[a-zA-Z_][\w.-]*(:[\w.-]+)*$/.test(tagName);
+}
+
+export function parseItemEnclosure(
+  enclosure: convert.ElementCompact,
+  feedItem: FeedItem,
+  urlKey: string = "url",
+) {
+  const originalType = enclosure._attributes?.type?.toString();
+  let type = "image";
+  if (originalType && originalType.includes("/")) {
+    type = originalType.split("/")[0];
+  }
+  let length: number | undefined = undefined;
+  if (enclosure._attributes?.length) {
+    const num = parseInt(enclosure._attributes?.length.toString());
+    if (!isNaN(num)) {
+      length = num;
+    }
+  }
+  const result: Enclosure = {
+    url: enclosure._attributes?.[urlKey]?.toString() || "",
+    type: originalType,
+    length,
+    title: enclosure._attributes?.title?.toString(),
+  };
+  feedItem.options.enclosure = result;
+  if (type === "image") {
+    feedItem.options.image = result;
+  } else if (type === "audio") {
+    feedItem.options.audio = result;
+  } else if (type === "video") {
+    feedItem.options.video = result;
+  }
 }
