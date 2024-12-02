@@ -1,4 +1,4 @@
-import { isValidTagName, sanitize } from "../utils";
+import { escapeXML, isValidTagName, sanitize } from "../utils";
 
 describe("Sanitizing", () => {
   it("should sanitize & to &amp;", () => {
@@ -22,5 +22,21 @@ describe("isValidTagName", () => {
     expect(isValidTagName("dc:creator")).toBe(true);
     expect(isValidTagName("xml:title")).toBe(false);
     expect(isValidTagName("")).toBe(false);
+  });
+});
+
+describe("escapeXML", () => {
+  it("should escape &", () => {
+    expect("&amp;").toEqual(escapeXML("&"));
+    expect("&amp;&amp;").toEqual(escapeXML("&&"));
+    expect("&amp;&amp;").toEqual(escapeXML("&&amp;"));
+    expect("&amp;").toEqual(escapeXML("&amp;"));
+    expect("&lt;").toEqual(escapeXML("&lt;"));
+  });
+  it("should escape <, >, \", '", () => {
+    expect("&lt;").toEqual(escapeXML("<"));
+    expect("&gt;").toEqual(escapeXML(">"));
+    expect("&quot;").toEqual(escapeXML('"'));
+    expect("&apos;").toEqual(escapeXML("'"));
   });
 });

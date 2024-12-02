@@ -1,3 +1,4 @@
+import terser from "@rollup/plugin-terser";
 import type { RollupOptions } from "rollup";
 import dts from "rollup-plugin-dts";
 import esbuild from "rollup-plugin-esbuild";
@@ -6,6 +7,16 @@ const pluginEsbuild = esbuild({
   target: "es2020",
 });
 const pluginDts = dts();
+const pluginTerser = terser({
+  compress: {
+    drop_console: true,
+    drop_debugger: true,
+  },
+  mangle: true,
+  format: {
+    comments: false,
+  },
+});
 
 const input = "./src/index.ts";
 const outDir = "./lib";
@@ -23,7 +34,7 @@ export default [
         format: "cjs",
       },
     ],
-    plugins: [pluginEsbuild],
+    plugins: [pluginEsbuild, pluginTerser],
   },
   {
     input,

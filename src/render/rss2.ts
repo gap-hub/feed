@@ -9,7 +9,7 @@ import {
   combinedFeedFields,
   combinedFeedItemFields,
 } from "../typings";
-import { isString, isURL, isValidTagName, sanitize } from "../utils";
+import { escapeXML, isString, isURL, isValidTagName } from "../utils";
 
 /**
  * Returns a RSS 2.0 feed
@@ -26,7 +26,7 @@ export function renderRSS(ins: Feed) {
     base._instruction = {
       "xml-stylesheet": {
         _attributes: {
-          href: sanitize(ins.stylesheet),
+          href: escapeXML(ins.stylesheet),
           type: "text/xsl",
         },
       },
@@ -35,9 +35,9 @@ export function renderRSS(ins: Feed) {
   base.rss = {
     _attributes: { version: "2.0" },
     channel: {
-      title: { _text: options.title },
-      link: { _text: sanitize(options.link) },
-      description: { _text: options.description },
+      title: { _text: escapeXML(options.title) },
+      link: { _text: escapeXML(options.link) },
+      description: { _text: escapeXML(options.description) },
       lastBuildDate: {
         _text: options.updated
           ? options.updated.toUTCString()
@@ -45,10 +45,10 @@ export function renderRSS(ins: Feed) {
       },
       docs: {
         _text: options.docs
-          ? sanitize(options.docs)
+          ? escapeXML(options.docs)
           : "https://validator.w3.org/feed/docs/rss2.html",
       },
-      generator: { _text: options.generator || generator },
+      generator: { _text: escapeXML(options.generator) || generator },
     },
   };
 
@@ -57,7 +57,7 @@ export function renderRSS(ins: Feed) {
    * https://validator.w3.org/feed/docs/rss2.html#ltlanguagegtSubelementOfLtchannelgt
    */
   if (options.language) {
-    base.rss.channel.language = { _text: options.language };
+    base.rss.channel.language = { _text: escapeXML(options.language) };
   }
 
   /**
@@ -74,9 +74,9 @@ export function renderRSS(ins: Feed) {
    */
   if (options.image) {
     base.rss.channel.image = {
-      title: { _text: options.title },
-      url: { _text: options.image },
-      link: { _text: sanitize(options.link) },
+      title: { _text: escapeXML(options.title) },
+      url: { _text: escapeXML(options.image) },
+      link: { _text: escapeXML(options.link) },
     };
   }
 
@@ -85,7 +85,7 @@ export function renderRSS(ins: Feed) {
    * https://validator.w3.org/feed/docs/rss2.html#optionalChannelElements
    */
   if (options.copyright) {
-    base.rss.channel.copyright = { _text: options.copyright };
+    base.rss.channel.copyright = { _text: escapeXML(options.copyright) };
   }
 
   /**
@@ -96,7 +96,7 @@ export function renderRSS(ins: Feed) {
     if (!base.rss.channel.category) {
       base.rss.channel.category = [];
     }
-    base.rss.channel.category.push({ _text: category });
+    base.rss.channel.category.push({ _text: escapeXML(category) });
   });
 
   /**
@@ -109,7 +109,7 @@ export function renderRSS(ins: Feed) {
     base.rss.channel["atom:link"] = [
       {
         _attributes: {
-          href: sanitize(atomLink),
+          href: escapeXML(atomLink),
           rel: "self",
           type: "application/rss+xml",
         },
@@ -128,7 +128,7 @@ export function renderRSS(ins: Feed) {
     }
     base.rss.channel["atom:link"] = {
       _attributes: {
-        href: sanitize(options.hub),
+        href: escapeXML(options.hub),
         rel: "hub",
       },
     };
@@ -163,17 +163,17 @@ export function renderRSS(ins: Feed) {
     }
 
     if (entry.link) {
-      item.link = { _text: sanitize(entry.link) };
+      item.link = { _text: escapeXML(entry.link) };
     }
 
     if (entry.id) {
       const isNotUrl = !isURL(entry.id);
-      item.guid = { _text: entry.id };
+      item.guid = { _text: escapeXML(entry.id) };
       if (isNotUrl) {
         item.guid._attributes = { isPermaLink: "false" };
       }
     } else if (entry.link) {
-      item.guid = { _text: sanitize(entry.link) };
+      item.guid = { _text: escapeXML(entry.link) };
     }
 
     if (entry.date) {
@@ -206,7 +206,9 @@ export function renderRSS(ins: Feed) {
       item.author = [];
       entry.authors.forEach((author) => {
         if (author.email && author.name) {
-          item.author.push({ _text: author.email + " (" + author.name + ")" });
+          item.author.push({
+            _text: escapeXML(author.email + " (" + author.name + ")"),
+          });
         }
       });
     }
@@ -279,21 +281,26 @@ const formatEnclosure = (
   mimeCategory = "image",
 ) => {
   if (typeof enclosure === "string") {
-    const type = new URL(sanitize(enclosure)!).pathname.split(".").slice(-1)[0];
+    const type = new URL(enclosure).pathname.split(".").slice(-1)[0];
     return {
       _attributes: {
         length: 0,
         type: `${mimeCategory}/${type}`,
-        url: enclosure,
+        url: escapeXML(enclosure),
       },
     };
   }
 
-  const type = new URL(sanitize(enclosure.url)!).pathname
-    .split(".")
-    .slice(-1)[0];
+  const type = new URL(enclosure.url).pathname.split(".").slice(-1)[0];
+  const { url, title, ...rest } = enclosure;
   return {
-    _attributes: { length: 0, type: `${mimeCategory}/${type}`, ...enclosure },
+    _attributes: {
+      length: 0,
+      type: `${mimeCategory}/${type}`,
+      url: escapeXML(url),
+      title: escapeXML(title),
+      ...rest,
+    },
   };
 };
 
@@ -304,7 +311,7 @@ const formatEnclosure = (
 const formatCategory = (category: Category) => {
   const { name, domain } = category;
   return {
-    _text: name,
+    _text: escapeXML(name),
     _attributes: {
       domain,
     },

@@ -5,7 +5,7 @@ export const updated = new Date("Sat, 13 Jul 2013 23:00:00 GMT");
 export const published = new Date("Sat, 10 Jul 2013 23:00:00 GMT");
 
 export const sampleFeed = new Feed({
-  title: "Feed Title",
+  title: "Feed Title & Title2",
   description: "This is my personnal feed!",
   link: "http://example.com/",
   id: "http://example.com/",
@@ -92,9 +92,10 @@ item.addExtension({
 });
 item.addCategory("Grateful Dead");
 item.addCategory({ name: "MSFT", domain: "http://www.fool.com/cusips" });
-item.options.image = "https://example.com/hello-world.jpg";
+item.options.image =
+  "https://example.com/hello-world.jpg?link=sanitized&value=2";
 item.options.enclosure = {
-  url: "https://example.com/hello-world.jpg",
+  url: "https://example.com/hello-world.jpg?link=sanitized&value=2",
   length: 12665,
   type: "image/jpeg",
 };

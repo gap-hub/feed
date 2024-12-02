@@ -15,6 +15,18 @@ export function sanitize(url: string | undefined): string | undefined {
   return url.replace(/&/g, "&amp;");
 }
 
+export function escapeXML(text?: string): string | undefined {
+  if (!text) {
+    return text;
+  }
+  return text
+    .replace(/&(?!amp;|lt;|gt;|quot;|apos;)/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 /**
  * Check if the value is a string
  * @param value - The value to check

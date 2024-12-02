@@ -3,7 +3,7 @@
 exports[`json 1 should generate a valid feed and parse back to feed: generated 1`] = `
 "{
     "version": "https://jsonfeed.org/version/1.1",
-    "title": "Feed Title",
+    "title": "Feed Title & Title2",
     "home_page_url": "http://example.com/",
     "feed_url": "http://example.com/sampleFeed.json",
     "description": "This is my personnal feed!",
@@ -32,7 +32,7 @@ exports[`json 1 should generate a valid feed and parse back to feed: generated 1
             "url": "https://example.com/hello-world?link=sanitized&value=2",
             "title": "Hello World",
             "summary": "This is an article about Hello World.",
-            "image": "https://example.com/hello-world.jpg",
+            "image": "https://example.com/hello-world.jpg?link=sanitized&value=2",
             "date_modified": "2013-07-13T23:00:00.000Z",
             "date_published": "2013-07-10T23:00:00.000Z",
             "authors": [
@@ -73,7 +73,7 @@ exports[`json 1 should generate a valid feed and parse back to feed: generated 1
 exports[`json 1 should generate a valid feed and parse back to feed: parsed 1`] = `
 "{
     "version": "https://jsonfeed.org/version/1.1",
-    "title": "Feed Title",
+    "title": "Feed Title & Title2",
     "home_page_url": "http://example.com/",
     "feed_url": "http://example.com/sampleFeed.json",
     "description": "This is my personnal feed!",
@@ -102,7 +102,7 @@ exports[`json 1 should generate a valid feed and parse back to feed: parsed 1`] 
             "url": "https://example.com/hello-world?link=sanitized&value=2",
             "title": "Hello World",
             "summary": "This is an article about Hello World.",
-            "image": "https://example.com/hello-world.jpg",
+            "image": "https://example.com/hello-world.jpg?link=sanitized&value=2",
             "date_modified": "2013-07-13T23:00:00.000Z",
             "date_published": "2013-07-10T23:00:00.000Z",
             "authors": [

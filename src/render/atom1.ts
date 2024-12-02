@@ -10,7 +10,7 @@ import {
   combinedFeedFields,
   combinedFeedItemFields,
 } from "../typings";
-import { isString, isValidTagName, sanitize } from "../utils";
+import { escapeXML, isString, isValidTagName } from "../utils";
 
 /**
  * Returns an Atom feed
@@ -26,7 +26,7 @@ export function renderAtom(ins: Feed) {
     base._instruction = {
       "xml-stylesheet": {
         _attributes: {
-          href: sanitize(ins.stylesheet),
+          href: escapeXML(ins.stylesheet),
           type: "text/xsl",
         },
       },
@@ -34,12 +34,12 @@ export function renderAtom(ins: Feed) {
   }
   base.feed = {
     _attributes: { xmlns: "http://www.w3.org/2005/Atom" },
-    id: options.id,
-    title: options.title,
+    id: escapeXML(options.id),
+    title: escapeXML(options.title),
     updated: options.updated
       ? options.updated.toISOString()
       : new Date().toISOString(),
-    generator: sanitize(options.generator || generator),
+    generator: escapeXML(options.generator || generator),
   };
 
   if (options.authors) {
@@ -51,25 +51,25 @@ export function renderAtom(ins: Feed) {
   // link (rel="alternate")
   if (options.link) {
     base.feed.link.push({
-      _attributes: { rel: "alternate", href: sanitize(options.link) },
+      _attributes: { rel: "alternate", href: escapeXML(options.link) },
     });
   }
 
   // link (rel="self")
-  const atomLink = sanitize(
+  const atomLink = escapeXML(
     options.feed || (options.feedLinks && options.feedLinks.atom),
   );
 
   if (atomLink) {
     base.feed.link.push({
-      _attributes: { rel: "self", href: sanitize(atomLink) },
+      _attributes: { rel: "self", href: escapeXML(atomLink) },
     });
   }
 
   // link (rel="hub")
   if (options.hub) {
     base.feed.link.push({
-      _attributes: { rel: "hub", href: sanitize(options.hub) },
+      _attributes: { rel: "hub", href: escapeXML(options.hub) },
     });
   }
 
@@ -78,25 +78,25 @@ export function renderAtom(ins: Feed) {
    *************************************************************************/
 
   if (options.description) {
-    base.feed.subtitle = options.description;
+    base.feed.subtitle = escapeXML(options.description);
   }
 
   if (options.image) {
-    base.feed.logo = options.image;
+    base.feed.logo = escapeXML(options.image);
   }
 
   if (options.favicon) {
-    base.feed.icon = options.favicon;
+    base.feed.icon = escapeXML(options.favicon);
   }
 
   if (options.copyright) {
-    base.feed.rights = options.copyright;
+    base.feed.rights = escapeXML(options.copyright);
   }
 
   base.feed.category = [];
 
   ins.categories.map((category: string) => {
-    base.feed.category.push({ _attributes: { term: category } });
+    base.feed.category.push({ _attributes: { term: escapeXML(category) } });
   });
 
   base.feed.contributor = [];
@@ -137,8 +137,8 @@ export function renderAtom(ins: Feed) {
         },
         _cdata: isString(item.title) ? item.title : item.title.text,
       },
-      id: sanitize(item.id || item.link),
-      link: [{ _attributes: { href: sanitize(item.link) } }],
+      id: escapeXML(item.id || item.link),
+      link: [{ _attributes: { href: escapeXML(item.link) } }],
       updated: item.date.toISOString(),
     };
 
@@ -217,7 +217,7 @@ export function renderAtom(ins: Feed) {
 
     // rights
     if (item.copyright) {
-      entry.rights = item.copyright;
+      entry.rights = escapeXML(item.copyright);
     }
     Object.keys(feedItem.customFields)
       .filter((key) => !combinedFeedItemFields.includes(key))
@@ -254,7 +254,7 @@ const formatAuthor = (author: Author) => {
   }
 
   if (link) {
-    out.uri = sanitize(link);
+    out.uri = escapeXML(link);
   }
 
   return out;
@@ -281,24 +281,22 @@ const formatEnclosure = (
   mimeCategory = "image",
 ) => {
   if (typeof enclosure === "string") {
-    const type = new URL(sanitize(enclosure)!).pathname.split(".").slice(-1)[0];
+    const type = new URL(enclosure).pathname.split(".").slice(-1)[0];
     return {
       _attributes: {
         rel: "enclosure",
         type: `${mimeCategory}/${type}`,
-        href: enclosure,
+        href: escapeXML(enclosure),
       },
     };
   }
 
-  const type = new URL(sanitize(enclosure.url)!).pathname
-    .split(".")
-    .slice(-1)[0];
+  const type = new URL(enclosure.url).pathname.split(".").slice(-1)[0];
   return {
     _attributes: {
       rel: "enclosure",
       type: `${mimeCategory}/${type}`,
-      href: enclosure.url,
+      href: escapeXML(enclosure.url),
     },
   };
 };

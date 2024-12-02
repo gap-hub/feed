@@ -1,6 +1,6 @@
 {
   "name": "@gaphub/feed",
-  "version": "5.2.3",
+  "version": "5.2.4",
   "description": "@gaphub/feed is a RSS, Atom, JSON feed and OPML generator/parser for Node.js, making content syndication simple and intuitive!",
   "homepage": "https://github.com/gap-hub/feed",
   "author": "Jon Zhang <jonzhang520s@gmail.com>",
@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.10.0",
+    "@rollup/plugin-terser": "^0.4.4",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/jest": "^29.5.13",
     "@typescript-eslint/eslint-plugin": "^8.5.0",

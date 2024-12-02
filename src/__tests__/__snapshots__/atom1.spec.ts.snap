@@ -4,7 +4,7 @@ exports[`atom 1.0 should generate a valid feed: generated 1`] = `
 "<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="https://example.com/stylesheet.xsl" type="text/xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://example.com/</id>
-    <title>Feed Title</title>
+    <title>Feed Title &amp; Title2</title>
     <updated>2013-07-13T23:00:00.000Z</updated>
     <generator>https://github.com/gap-hub/feed</generator>
     <author>
@@ -35,7 +35,7 @@ exports[`atom 1.0 should generate a valid feed: generated 1`] = `
         <title type="text"><![CDATA[Hello World]]></title>
         <id>https://example.com/hello-world?id=this&amp;that=true</id>
         <link href="https://example.com/hello-world?link=sanitized&amp;value=2"/>
-        <link rel="enclosure" type="image/jpg" href="https://example.com/hello-world.jpg"/>
+        <link rel="enclosure" type="image/jpg" href="https://example.com/hello-world.jpg?link=sanitized&amp;value=2"/>
         <updated>2013-07-13T23:00:00.000Z</updated>
         <summary type="text"><![CDATA[This is an article about Hello World.]]></summary>
         <content type="text"><![CDATA[Content of my item]]></content>
@@ -77,7 +77,7 @@ exports[`atom 1.0 should generate a valid feed: parsed 1`] = `
 "<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="https://example.com/stylesheet.xsl" type="text/xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>http://example.com/</id>
-    <title>Feed Title</title>
+    <title>Feed Title &amp; Title2</title>
     <updated>2013-07-13T23:00:00.000Z</updated>
     <generator>https://github.com/gap-hub/feed</generator>
     <author>
@@ -108,7 +108,7 @@ exports[`atom 1.0 should generate a valid feed: parsed 1`] = `
         <title type="text"><![CDATA[Hello World]]></title>
         <id>https://example.com/hello-world?id=this&amp;that=true</id>
         <link href="https://example.com/hello-world?link=sanitized&amp;value=2"/>
-        <link rel="enclosure" type="image/jpg" href="https://example.com/hello-world.jpg"/>
+        <link rel="enclosure" type="image/jpg" href="https://example.com/hello-world.jpg?link=sanitized&amp;value=2"/>
         <updated>2013-07-13T23:00:00.000Z</updated>
         <summary type="text"><![CDATA[This is an article about Hello World.]]></summary>
         <content type="text"><![CDATA[Content of my item]]></content>
